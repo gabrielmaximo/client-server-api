@@ -6,12 +6,19 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"io"
 	"net/http"
 	"time"
 )
 
-type economiaApiResponse struct {
-	bid string
+type EconomiaApiResponse struct {
+	USDBRL struct {
+		Bid string `json:"bid"`
+	} `json:"USDBRL"`
+}
+
+type ServerResponse struct {
+	Bid string `json:"bid"`
 }
 
 type CotacaoEntity struct {
@@ -34,15 +41,26 @@ func main() {
 	}
 
 	mux.HandleFunc("/cotacao", func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+		ctx, cancel := context.WithTimeout(context.Background(), 2000*time.Millisecond)
 		defer cancel()
 
-		res, err := http.NewRequestWithContext(ctx, "GET", EconomiaApiUrl, nil)
+		req, err := http.NewRequestWithContext(ctx, "GET", EconomiaApiUrl, nil)
 		if err != nil {
 			panic(err)
 		}
 
-		var decodedResponse = new(economiaApiResponse)
+		res, err := http.DefaultClient.Do(req)
+		if err != nil {
+			panic(err)
+		}
+		defer func(b io.ReadCloser) {
+			err := b.Close()
+			if err != nil {
+				panic(err)
+			}
+		}(res.Body)
+
+		var decodedResponse = new(EconomiaApiResponse)
 		err = json.NewDecoder(res.Body).Decode(decodedResponse)
 		if err != nil {
 			panic(err)
@@ -51,10 +69,10 @@ func main() {
 		ctx, cancel = context.WithTimeout(context.Background(), 10*time.Millisecond)
 		defer cancel()
 
-		db.WithContext(ctx).Create(CotacaoEntity{ID: uuid.New().String(), bid: decodedResponse.bid})
+		db.WithContext(ctx).Create(CotacaoEntity{ID: uuid.New().String(), bid: decodedResponse.USDBRL.Bid})
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		err = json.NewEncoder(w).Encode(decodedResponse)
+		err = json.NewEncoder(w).Encode(ServerResponse{Bid: decodedResponse.USDBRL.Bid})
 		if err != nil {
 			panic(err)
 		}
