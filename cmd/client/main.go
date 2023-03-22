@@ -10,7 +10,7 @@ import (
 )
 
 type serverResponse struct {
-	bid string
+	Bid string
 }
 
 const EndpointPath = "cotacao"
@@ -23,7 +23,12 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 300*time.Millisecond)
 	defer cancel()
 
-	res, err := http.NewRequestWithContext(ctx, "GET", ServerApiUrl, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", ServerApiUrl, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		panic(err)
 	}
@@ -51,7 +56,7 @@ func main() {
 		}
 	}(file)
 
-	_, err = file.WriteString("Dolar: " + decodedResponse.bid)
+	_, err = file.WriteString("Dolar: " + decodedResponse.Bid + "\n")
 	if err != nil {
 		panic(err)
 	}
