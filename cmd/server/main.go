@@ -41,10 +41,10 @@ func main() {
 	}
 
 	mux.HandleFunc("/cotacao", func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
-		defer cancel()
+		ctx2, cancel2 := context.WithTimeout(context.Background(), 200*time.Millisecond)
+		defer cancel2()
 
-		req, err := http.NewRequestWithContext(ctx, "GET", EconomiaApiUrl, nil)
+		req, err := http.NewRequestWithContext(ctx2, "GET", EconomiaApiUrl, nil)
 		if err != nil {
 			panic(err)
 		}
@@ -66,10 +66,10 @@ func main() {
 			panic(err)
 		}
 
-		ctx, cancel = context.WithTimeout(context.Background(), 10*time.Millisecond)
-		defer cancel()
+		ctx2, cancel2 = context.WithTimeout(context.Background(), 10*time.Millisecond)
+		defer cancel2()
 
-		db.WithContext(ctx).Create(CotacaoEntity{ID: uuid.New().String(), Bid: decodedResponse.USDBRL.Bid})
+		db.WithContext(ctx2).Create(CotacaoEntity{ID: uuid.New().String(), Bid: decodedResponse.USDBRL.Bid})
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		err = json.NewEncoder(w).Encode(ServerResponse{Bid: decodedResponse.USDBRL.Bid})
