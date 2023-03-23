@@ -67,6 +67,9 @@ func main() {
 		}
 
 		ctx2, cancel2 = context.WithTimeout(context.Background(), 10*time.Millisecond)
+		if ctx2.Err() != nil {
+			panic(ctx2.Err())
+		}
 		defer cancel2()
 
 		db.WithContext(ctx2).Create(CotacaoEntity{ID: uuid.New().String(), Bid: decodedResponse.USDBRL.Bid})
