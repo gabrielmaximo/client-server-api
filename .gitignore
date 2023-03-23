@@ -19,3 +19,4 @@
 
 # Static files
 web/static/**
+!web/static/.gitkeep
