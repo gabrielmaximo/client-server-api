@@ -23,7 +23,7 @@ type ServerResponse struct {
 
 type CotacaoEntity struct {
 	ID  string `gorm:"primary key"`
-	bid string
+	Bid string
 }
 
 const EconomiaApiUrl = "https://economia.awesomeapi.com.br/json/last/USD-BRL"
@@ -41,7 +41,7 @@ func main() {
 	}
 
 	mux.HandleFunc("/cotacao", func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(context.Background(), 2000*time.Millisecond)
+		ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 		defer cancel()
 
 		req, err := http.NewRequestWithContext(ctx, "GET", EconomiaApiUrl, nil)
@@ -69,7 +69,7 @@ func main() {
 		ctx, cancel = context.WithTimeout(context.Background(), 10*time.Millisecond)
 		defer cancel()
 
-		db.WithContext(ctx).Create(CotacaoEntity{ID: uuid.New().String(), bid: decodedResponse.USDBRL.Bid})
+		db.WithContext(ctx).Create(CotacaoEntity{ID: uuid.New().String(), Bid: decodedResponse.USDBRL.Bid})
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
 		err = json.NewEncoder(w).Encode(ServerResponse{Bid: decodedResponse.USDBRL.Bid})
